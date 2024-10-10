@@ -49,7 +49,7 @@ class Main implements EventListenerObject {
            // Handler para cambiar el estado del dispositivo
         else if(idDelElemento.startsWith("cb_")){
             let input = <HTMLInputElement>object.target;
-            this.updateStateDevice(parseInt(input.getAttribute("idBd")), Number(input.checked));
+            this.updateDeviceState(parseInt(input.getAttribute("idBd")), Number(input.checked));
         }
 
         // Handler para editar dispositivo
@@ -79,11 +79,13 @@ class Main implements EventListenerObject {
             let editForm = this.recuperarElemento("deviceForm_" + idDelItem);
             // Se recuperan parámetros del formulario
             let inputName = editForm.querySelector<HTMLInputElement>("#devName");
-            let inputDesc = editForm.querySelector<HTMLInputElement>("#descName")
-            let nombre = String(inputName.value)
+            let inputDesc = editForm.querySelector<HTMLInputElement>("#descName");
+            let inputType = editForm.querySelector<HTMLInputElement>("#newType");
+            let nombre = String(inputName.value);
             let desc = String(inputDesc.value);
+            let tipo = Number(inputType.value);
             // Actualizar información en base de datos
-            this.updateDeviceInfo(idDelItem, nombre, desc);
+            this.updateDeviceInfo(idDelItem, nombre, desc, tipo);
             // Actualizar página con los cambios
             this.buscarDevices();
         }
@@ -116,15 +118,20 @@ class Main implements EventListenerObject {
                     let lista: Array<Device> = JSON.parse(xmlHttp.responseText);
                     // Contador para acomodar tarjetas de a 3 por fila
                     let contador = 0;
+                    let slidebar = ``;
                     for (let item of lista) {
+                        // Generar el slider si el dispositivo posee regulación
+                        slidebar = this.generateSlider(item);
+                        // Cargar imagen de dispositivo según su nombre
+                        let img = this.getDeviceImage(item.name);
                         listaDevices += `
                             <div class="col m3 l3 xl3">  <!-- Columna de 4 tarjetas por fila -->
-                                <div class="card hoverable" style="background-color: lightblue; border-radius: 8px;">
+                                <div class="card hoverable" style="background-color: rgb(140, 132, 182); border-radius: 12px;">
                                     <div class="card-content">
-                                        <img src="./static/images/lightbulb.png" left-align class="circle">
+                                        <img src="${img}" left-align>
                                         <a href="#!" class="secondary-content">
                                             <div class="switch">
-                                                <label>
+                                                <label style="color:black">
                                                     Off`;
                                                     if (item.state) {
                                                         listaDevices += `<input idBd="${item.id}" id="cb_${item.id}" type="checkbox" checked>`;
@@ -139,9 +146,9 @@ class Main implements EventListenerObject {
                                         </a><br>
                                         <span class="title">${item.name}</span>
                                         <p>${item.description}</p>
-                                        <br>
-
-                                        <!-- Botones para editar o cancelar la edición: un formulario oculto por tarjeta -->
+                                        ` +
+                                        slidebar +
+                                        `<!-- Botones para editar o cancelar la edición: un formulario oculto por tarjeta -->
                                         <button class="btn-floating btn-medium waves-effect waves-light blue">
                                             <i class="material-icons" id="edit_btn_${item.id}" idItem="${item.id}">create</i>
                                         </button>
@@ -152,7 +159,14 @@ class Main implements EventListenerObject {
                                         <!-- Formulario oculto -->
                                         <div class="input-field" id="deviceForm_${item.id}" hidden>
                                             <input value="${item.name}" itemName="${item.name}" id="devName" type="text">
-                                            <input value="${item.description}"  id="descName" type="text">
+                                            <input value="${item.description}"  id="descName" type="text"><br>
+                                            <br>
+                                            <select class="browser-default" id="newType" required style="background-color:rgb(140, 132, 182)">
+                                                <option value="" disabled>Elija una opción</option>
+                                                <option value="0" selected>ON/OFF</option>
+                                                <option value="1">Dimerizable (10 a 100%)</option>
+                                                <option value="2">Climatizador (16 a 30°C)</option>
+                                            </select><br>
                                             <button  class="btn-floating btn-small waves-effect waves-light green">
                                                 <i class="material-icons" id="ok_${item.id}" idItem='${item.id}'>check</i>
                                             </button>
@@ -165,28 +179,9 @@ class Main implements EventListenerObject {
                             </div>`;
                         
                         contador++;
-                        // Señal para colocar el formulario para agregar dispositivo
+                        // Señal para colocar el formulario que agrega un dispositivo
                         if(contador == 3){
-                            // Formulario para agregar dispositivo
-                            listaDevices += `
-                                <div class="col m3 l3 xl3" id="newDevForm" hidden>
-                                    <h6> Agregar nuevo dispositivo</h6>
-                                    <label for="devName">Nombre del dispositivo</label>
-                                    <input placeholder="Lampara" id="devName" type="text" required>
-                                    <label for="descName">Descripción</label>
-                                    <input placeholder="Luz de la cocina" id="descName" type="text" required>
-                                    <label>Tipo de dispositivo</label>
-                                    <select class="browser-default" id="newType" required>
-                                        <option value="" disabled>Elija una opción</option>
-                                        <option value="1" selected>ON/OFF</option>
-                                        <option value="2">Dimerizable (0 a 100%)</option>
-                                        <option value="3">Climatizador (16 a 30°C)</option>
-                                    </select>
-                                    <br>
-                                    <button class="btn waves-effect waves-light blue" id="btn_agregar">Agregar</button>
-                                    <button class="btn waves-effect waves-light right red" id="btn_cancelar">Cancelar</button>
-
-                                </div>`
+                            listaDevices += this.generateAddForm();
                         }
                         // Cada 4 tarjetas se cierra la fila y se abre una nueva
                         if (contador % 3 == 0) {
@@ -210,6 +205,7 @@ class Main implements EventListenerObject {
                         let btnCancel = this.recuperarElemento("cancel_" + item.id);
                         btnCancel.addEventListener('click', this);
                     }
+                    // Se agregan los listeners de formulario para agregar dispositivos
                     let btnAgregar = this.recuperarElemento("btn_agregar");
                     btnAgregar.addEventListener('click', this);
                     let newCancelar = this.recuperarElemento("btn_cancelar");
@@ -227,10 +223,8 @@ class Main implements EventListenerObject {
     // Método para agregar un dispositivo
     private newDevice(nombre:string, desc: string, tipo: number): void {
         // Variable para armar el mensaje en formato JSON
-        let messageJSON = { name:nombre,
-                            description:desc,
-                            type:tipo, };
-
+        let messageJSON = { name:nombre, description:desc, type:tipo, };
+        
         // Variable para realizar la petición
         let xmlHttpPost = new XMLHttpRequest();
         // Variable para el texto de respuesta
@@ -249,7 +243,7 @@ class Main implements EventListenerObject {
     }
 
     // Método para actualizar el estado de un dispositivo
-    private updateStateDevice(idDevice: number, stateDevice: number): void {
+    private updateDeviceState(idDevice: number, stateDevice: number): void {
         // Variable para armar el mensaje en formato JSON
         let messageJSON = { id: idDevice, state: stateDevice };
 
@@ -273,15 +267,16 @@ class Main implements EventListenerObject {
     }
 
     // Método para actualizar nombre, descripción y/o tipo de dispositivo
-    private updateDeviceInfo(idDevice: number, name: string, description: string){
+    private updateDeviceInfo(idDevice: number, name: string, description: string, tipo: number){
         // Variable para armar el mensaje en formato JSON
-        let messageJSON = { id: idDevice, name: name, description: description };
+        let messageJSON = { id: idDevice, name: name, description: description, type: tipo };
 
         // Variable para realizar la petición
         let xmlHttpPut = new XMLHttpRequest();
 
         // Variable para el texto de respuesta
-        let responseMetod = { html: 'Se ha actualizado el estado del dispositivo', classes: 'rounded waves-effect waves-light green' };
+        let responseMetod = { html: 'Se ha actualizado el estado del dispositivo',
+            classes: 'rounded waves-effect waves-light green' };
         
         // Se realiza la petición
         xmlHttpPut.open("PUT", "http://localhost:8000/device/info/", true);
@@ -296,6 +291,7 @@ class Main implements EventListenerObject {
         }
     }
 
+    // Método para eliminar un dispositivo
     private deleteDevice(idDevice: number): void {
         // Variable para realizar la petición
         let xmlHttpDelete = new XMLHttpRequest();
@@ -320,6 +316,89 @@ class Main implements EventListenerObject {
         }
     }
 
+    // Método para asignar una imagen a un dispositivo según su nombre
+    private getDeviceImage(name:string): string{
+        let route = "./static/images/";
+        let image: string = 'default.png';
+        // Pasar a minúsculas para hacer más fácil las comparaciones
+        let nombre = name.toLocaleLowerCase();
+
+        //Dependiendo el nombre del dispositivo se le asignará una imagen distinta
+        if(nombre.startsWith("lampara") || nombre.startsWith("lu") || nombre.startsWith("velador") || nombre.startsWith("lámpara")){
+            image = "bulb.png";
+        } else if (nombre.startsWith("ventana") || nombre.startsWith("persiana")){
+            image = "window.png";
+        } else if(nombre.startsWith("tele") || nombre.startsWith("tv") ||nombre.startsWith("t.v.")){
+            image = "tv.png";
+        } else if (nombre.startsWith("venti") || nombre.startsWith("fan") || nombre.startsWith("caloventor")){
+            image = "venti.png"
+        } else if (nombre.startsWith("a.c.") || nombre.startsWith("aire") || nombre.startsWith("ac")){
+            image = "AC.png"
+        } else if (nombre.startsWith("equipo de música") || nombre.startsWith("radio")){
+            image = "music.png"
+        } else if (nombre.startsWith("lavaropa")){
+            image = "laundry.png";
+        } else if (nombre.startsWith("reloj") || nombre.startsWith("clock") || nombre.startsWith("timer")){
+            image = "clock.png"
+        }
+
+        let result: string = route + image;
+        return result;
+    }
+
+    // Método para generar slider a los dispositivos regulables
+    private generateSlider(item:any): string{
+        let slidebar: string;
+        if(item.type == 1){
+            slidebar = `
+            <div class="slidecontainer">
+                <label for="myRange" style="font-size: 14px; display: flex; justify-content: space-between; width: 100%; color:darkred">
+                    <span>10%</span>
+                    <span><b>Intensidad</b></span>
+                    <span>100%</span>
+                </label>
+                    <input type="range" id="myRange" min="10" max="100" value="60" style="background:blue;"/>
+            </div>`
+        } else if(item.type == 2){
+            slidebar = `
+            <div class="slidecontainer">
+                <label for="myRange" style="font-size: 14px; display: flex; justify-content: space-between; width: 100%; color:darkblue">
+                    <span>16°C</span>
+                    <span><b>Temperatura</b></span>
+                    <span>30°C</span>
+                </label>
+                    <input type="range" id="myRange" min="16" max="30" value="24" style="background-color:blue;"/>
+            </div>`
+        } else{
+            slidebar = `<br><br>`;
+        }
+        return slidebar;
+    }
+
+    // Método para generar el formulario para agregar dispositivo
+    private generateAddForm(): string{
+        let form:string = `
+        <div class="col m3 l3 xl3" id="newDevForm" hidden>
+            <h6> Agregar nuevo dispositivo</h6>
+            <label for="devName">Nombre del dispositivo</label>
+            <input placeholder="Lampara" id="devName" type="text" required>
+            <label for="descName">Descripción</label>
+            <input placeholder="Luz de la cocina" id="descName" type="text" required>
+            <label>Tipo de dispositivo</label>
+            <select class="browser-default" id="newType" required>
+                <option value="" disabled>Elija una opción</option>
+                <option value="0" selected>ON/OFF</option>
+                <option value="1">Dimerizable (10 a 100%)</option>
+                <option value="2">Climatizador (16 a 30°C)</option>
+            </select>
+            <br>
+            <button class="btn waves-effect waves-light blue" id="btn_agregar">Agregar</button>
+            <button class="btn waves-effect waves-light right red" id="btn_cancelar">Cancelar</button>
+        </div>`
+
+        return form;
+    }
+
     // Método para recuperar elementos del DOM
     private recuperarElemento(id: string):HTMLInputElement {
         return <HTMLInputElement>document.getElementById(id);
@@ -327,8 +406,6 @@ class Main implements EventListenerObject {
 }
 
 window.addEventListener('load', () => {
-    
     let main: Main = new Main();
-    
 });
 

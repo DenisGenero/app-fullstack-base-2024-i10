@@ -51,9 +51,9 @@ app.post('/device', function (req, res) {
 app.put('/device/info/', function (req, res) {
 
     // Consulta preparada para evitar inyección SQL
-    const query = "UPDATE Devices SET name = ?, description = ? WHERE id = ?";
+    const query = "UPDATE Devices SET name = ?, description = ?, type = ? WHERE id = ?";
     // Array de parámetros a pasar a la consulta
-    const params = [req.body.name, req.body.description, req.body.id];
+    const params = [req.body.name, req.body.description, req.body.type, req.body.id];
     
     utils.query(query, params, (err, resp) => {
         if (err) {

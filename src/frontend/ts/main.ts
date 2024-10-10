@@ -21,6 +21,7 @@ class Main implements EventListenerObject {
             }
         }
 
+        // Handler para guardar dispositivo en la base de datos
         else if(idDelElemento == "btn_agregar"){
             let newDevForm = this.recuperarElemento("newDevForm");
             let inputName = newDevForm.querySelector<HTMLInputElement>("#devName");
@@ -41,12 +42,13 @@ class Main implements EventListenerObject {
             }
         }
 
+        // Handler para ocultar formulario para agregar dispositivos (botón cancelar)
         else if (idDelElemento == "btn_cancelar"){
             let newDevForm = this.recuperarElemento("newDevForm");
             newDevForm.hidden = true;
         }
 
-           // Handler para cambiar el estado del dispositivo
+        // Handler para cambiar el estado del dispositivo
         else if(idDelElemento.startsWith("cb_")){
             let input = <HTMLInputElement>object.target;
             this.updateDeviceState(parseInt(input.getAttribute("idBd")), Number(input.checked));
@@ -100,12 +102,12 @@ class Main implements EventListenerObject {
         
         // Handler de evento desconocido
         else {
-            alert("Ups... Ocurrió un problema...");
+            alert("Ups, Ocurrió un problema...");
         }
     }
 
     // Método para buscar los dispositivos y ordenarlos en tarjetas.
-    // Se agrega ademas un formulario oculto para agregar un dispositivos
+    // Se agrega además un formulario oculto para agregar un dispositivos
     private buscarDevices(): void {
         let xmlHttp = new XMLHttpRequest();    
         xmlHttp.onreadystatechange = () => {
@@ -118,10 +120,11 @@ class Main implements EventListenerObject {
                     let lista: Array<Device> = JSON.parse(xmlHttp.responseText);
                     // Contador para acomodar tarjetas de a 3 por fila
                     let contador = 0;
-                    let slidebar = ``;
+
                     for (let item of lista) {
                         // Generar el slider si el dispositivo posee regulación
-                        slidebar = this.generateSlider(item);
+                        let slidebar = this.generateSlider(item);
+                        let editForm = this.generateEditForm(item);
                         // Cargar imagen de dispositivo según su nombre
                         let img = this.getDeviceImage(item.name);
                         listaDevices += `
@@ -145,8 +148,7 @@ class Main implements EventListenerObject {
                                             </div>
                                         </a><br>
                                         <span class="title">${item.name}</span>
-                                        <p>${item.description}</p>
-                                        ` +
+                                        <p>${item.description}</p>` +
                                         slidebar +
                                         `<!-- Botones para editar o cancelar la edición: un formulario oculto por tarjeta -->
                                         <button class="btn-floating btn-medium waves-effect waves-light blue">
@@ -154,32 +156,14 @@ class Main implements EventListenerObject {
                                         </button>
                                         <button class="btn-floating btn-medium waves-effect waves-light red">
                                             <i class="material-icons" id="delete_btn_${item.id}" idItem='${item.id}'>delete_forever</i>
-                                        </button>
-
-                                        <!-- Formulario oculto -->
-                                        <div class="input-field" id="deviceForm_${item.id}" hidden>
-                                            <input value="${item.name}" itemName="${item.name}" id="devName" type="text">
-                                            <input value="${item.description}"  id="descName" type="text"><br>
-                                            <br>
-                                            <select class="browser-default" id="newType" required style="background-color:rgb(140, 132, 182)">
-                                                <option value="" disabled>Elija una opción</option>
-                                                <option value="0" selected>ON/OFF</option>
-                                                <option value="1">Dimerizable (10 a 100%)</option>
-                                                <option value="2">Climatizador (16 a 30°C)</option>
-                                            </select><br>
-                                            <button  class="btn-floating btn-small waves-effect waves-light green">
-                                                <i class="material-icons" id="ok_${item.id}" idItem='${item.id}'>check</i>
-                                            </button>
-                                            <button  class="btn-floating btn-small waves-effect waves-light red">
-                                                <i class="material-icons" id="cancel_${item.id}" idItem='${item.id}'>cancel</i>
-                                            </button>
-                                        </div>
+                                        </button>`+
+                                        editForm +`
                                     </div>
                                 </div>
                             </div>`;
                         
                         contador++;
-                        // Señal para colocar el formulario que agrega un dispositivo
+                        // Señal para colocar el formulario que agrega un dispositivo (oculto)
                         if(contador == 3){
                             listaDevices += this.generateAddForm();
                         }
@@ -316,6 +300,7 @@ class Main implements EventListenerObject {
         }
     }
 
+    /* ############################ Helpers para renderizar la página ############################ */
     // Método para asignar una imagen a un dispositivo según su nombre
     private getDeviceImage(name:string): string{
         let route = "./static/images/";
@@ -373,6 +358,30 @@ class Main implements EventListenerObject {
             slidebar = `<br><br>`;
         }
         return slidebar;
+    }
+
+    // Método para generar el formulario para editar un dispositivo
+    private generateEditForm(item:any): string{
+        let form: string=`
+        <div class="input-field" id="deviceForm_${item.id}" hidden>
+            <input value="${item.name}" itemName="${item.name}" id="devName" type="text">
+            <input value="${item.description}"  id="descName" type="text"><br>
+            <br>
+            <select class="browser-default" id="newType" required style="background-color:rgb(140, 132, 182)">
+                <option value="" disabled>Elija una opción</option>
+                <option value="0" selected>ON/OFF</option>
+                <option value="1">Dimerizable (10 a 100%)</option>
+                <option value="2">Climatizador (16 a 30°C)</option>
+            </select><br>
+            <button  class="btn-floating btn-small waves-effect waves-light green">
+                <i class="material-icons" id="ok_${item.id}" idItem='${item.id}'>check</i>
+            </button>
+            <button  class="btn-floating btn-small waves-effect waves-light red">
+                <i class="material-icons" id="cancel_${item.id}" idItem='${item.id}'>cancel</i>
+            </button>
+        </div>
+        `
+        return form;
     }
 
     // Método para generar el formulario para agregar dispositivo

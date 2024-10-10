@@ -52,7 +52,6 @@ app.put('/device/info/', function (req, res) {
 
     // Consulta preparada para evitar inyección SQL
     const query = "UPDATE Devices SET name = ?, description = ?, type = ? WHERE id = ?";
-    // Array de parámetros a pasar a la consulta
     const params = [req.body.name, req.body.description, req.body.type, req.body.id];
     
     utils.query(query, params, (err, resp) => {
@@ -76,6 +75,7 @@ app.put('/device/state/', function (req, res) {
         })
 })
 
+// Eliminar un dispositivo
 app.delete('/device/:id', function (req, res) {
     const deviceId = req.params.id; // Obtener el ID del dispositivo de los parámetros de la URL
 

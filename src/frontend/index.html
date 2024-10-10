@@ -14,69 +14,28 @@
     <body>
 
         <main>
-            <!-- Navigation bar -->
             <nav style="background-color:#124580">
-                <div id="xx" class="nav-wrapper">
-                    <a href="#!" class="brand-logo left" style="margin-left: 15px;">Smart Home</a>
-                    <ul id="nav-mobile" class="right" style="margin-right: 15px;">
-                        <li><a href="#">Help</a></li>
-                    </ul>
+                <div class="row">
+                    <div class="col s3 m3 l3">
+                        <h5 style="margin-left: 15px;">Smart Home - Dispositivos</h5>
+                    </div>
+                    <div class="col s3 m3 l3">
+                        <!-- Columna para espaciado-->
+                    </div>
+                    <div class="col s3 m3 l3">
+                        <!-- Columna para espaciado-->
+                    </div>
+                    <div class="col s3 m3 l3">
+                        <button id="btn_add" class="btn waves-effect waves-light button-view light-blue" name="hello_button">Agregar dispositivo</button>
+                    </div>
                 </div>
-            </nav>	
+            </nav>
+
             <!-- Page Body -->
-            <div class="container">
-                <br/>
-                <h1 id="tit">texto</h1>
-                <h3>Smart Home Web asdas!</h3>
-              
-                <br/>
-                <input id="txt" type="text" value="valor1"/>
-                <div class="row">
-                    <div class="input-field col s12 m12 l6 xl6"  hidden id="divLogin">
-                        <div class="row">
-                            <div class="input-field col s6 m6 l6 xl6">
-                                <input placeholder="JDON" id="userName" type="text">
-                                <label for="userName">Nombre de Usuario</label>
-                            </div>
-                            <div class="input-field col s6 m6 l6 xl6">
-                                <input  id="userPass" type="password">
-                                <label for="userPass">Contraseña</label>
-                            </div>
-                            <div>
-                                <p>
-                                    <label>
-                                      <input type="checkbox" id="cbRecor" />
-                                      <span>Rercordarme</span>
-                                    </label>
-                                  </p>
-                            </div>
-                            <div>
-                                <button id="btnLogin" class="btn-large waves-effect waves-light" type="button">
-                                Ingresar
-                                <i class="material-icons left">face</i>
-                                </button>
-                            </div>
-                        </div>
-                        <textarea id="textarea_1" class="materialize-textarea" style="height: 150px;" readonly></textarea>
-                    </div>
-                    <div class="col s12 m12 l6 xl6">
-                        <ul  id="list" class="collection">
-                          
-                            
-                          
-                        </ul>
-                    </div>
-                    
-                </div>
-                <div class="row">
-                    <div class="col s4 m4 l2 xl2">
-                    
-                        <button id="btn" class="btn waves-effect waves-light button-view"  name="hello_button">PRESS ME</button>
-                        <button id="btnBuscar" class="btn waves-effect waves-light button-view"  name="hello_button">Buscar</button>
-                        <button id="btnPost" class="btn waves-effect waves-light button-view"  name="hello_button">Ejecutar POST</button>
-                    </div>
-                </div>
-            </div>	
+            <div class="container" id="dev_container">
+                <ul  id="list"></ul>
+            </div>
+            	
         </main>
 		<!-- Page Footer -->
         <footer class="page-footer" style="background-color:#124580">

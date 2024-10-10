@@ -46,7 +46,7 @@ CREATE TABLE `Devices` (
 
 INSERT INTO `Devices` (`id`, `name`, `description`, `state`, `type`) VALUES
 (1, 'Lampara 1', 'Luz living', 1, 0),
-(2, 'Lampara 2', 'Luz cocina', 0, 0),
+(2, 'Lampara 2', 'Luz cocina', 1, 0),
 (3, 'Velador', 'Velador living', 1, 0),
 (4, 'Persiana 1', 'Persiana living', 1, 1),
 (5, 'Persiana 2', 'Persiana de la cocina', 1, 1),

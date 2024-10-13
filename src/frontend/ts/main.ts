@@ -342,7 +342,7 @@ class Main implements EventListenerObject {
                     <span><b>Intensidad</b></span>
                     <span>100%</span>
                 </label>
-                    <input type="range" id="myRange" min="10" max="100" value="60" style="background:blue;"/>
+                    <input type="range" id="myRange" min="10" max="100" value="60"/>
             </div>`
         } else if(item.type == 2){
             slidebar = `
@@ -352,7 +352,7 @@ class Main implements EventListenerObject {
                     <span><b>Temperatura</b></span>
                     <span>30°C</span>
                 </label>
-                    <input type="range" id="myRange" min="16" max="30" value="24" style="background-color:blue;"/>
+                    <input type="range" id="myRange" min="16" max="30" value="24"/>
             </div>`
         } else{
             slidebar = `<br><br>`;

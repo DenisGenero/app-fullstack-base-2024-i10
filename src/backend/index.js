@@ -14,7 +14,7 @@ app.use(express.static('/home/node/app/static/'));
 
 // Obtener todos los dispositivos de la base de datos
 app.get('/devices/', function(req,res) {
-    utils.query("SELECT * FROM devices", (error,respuesta,fields) => {
+    utils.query("SELECT * FROM Devices", (error,respuesta,fields) => {
         if(error){
             res.status(409).send(error.sqlMessage);    
         }else{

@@ -31,13 +31,26 @@ class Main implements EventListenerObject {
             let nombre = String(inputName.value)
             let desc = String(inputDesc.value);
             let type = Number(inputType.value);
+            let control: number;
+
+            // Seteo por defecto del campo control
+            if(type == 0){
+                // Cero si no es regulable
+                control = 0;
+            } else if(type == 1){
+                // Intensidad por defecto del 60%
+                control = 60;
+            } else {
+                // Temperatura por defecto de 24°C
+                control = 24;
+            }
 
             // Control de campos vacíos:
             if(nombre == '' || desc == '') {
                 alert("Complete todos los campos")
             }
             else {
-                this.newDevice(nombre, desc, type);
+                this.newDevice(nombre, desc, type, control);
                 this.buscarDevices();
             }
         }
@@ -52,6 +65,13 @@ class Main implements EventListenerObject {
         else if(idDelElemento.startsWith("cb_")){
             let input = <HTMLInputElement>object.target;
             this.updateDeviceState(parseInt(input.getAttribute("idBd")), Number(input.checked));
+        }
+
+        else if(idDelElemento.startsWith("slide_")){
+            let input = <HTMLInputElement>object.target;
+            let slideId = parseInt(input.getAttribute("slide_id"));
+            let slideValue = parseInt(input.value);
+            this.updateDeviceControl(slideId, slideValue);
         }
 
         // Handler para editar dispositivo
@@ -86,8 +106,20 @@ class Main implements EventListenerObject {
             let nombre = String(inputName.value);
             let desc = String(inputDesc.value);
             let tipo = Number(inputType.value);
+            let control: number;
+
+            // Seteo de valores regulables
+            if (tipo == 0){
+                control = 0;
+            } else if(tipo == 1){
+                // Intensidad por defecto
+                control = 60;
+            } else {
+                // Temperatura por defecto
+                control = 24;
+            }
             // Actualizar información en base de datos
-            this.updateDeviceInfo(idDelItem, nombre, desc, tipo);
+            this.updateDeviceInfo(idDelItem, nombre, desc, tipo, control);
             // Actualizar página con los cambios
             this.buscarDevices();
         }
@@ -178,16 +210,26 @@ class Main implements EventListenerObject {
                     ul.innerHTML = listaDevices;
                     // Se generan los listeners para los botones
                     for (let item of lista) {
+                        // Botones de ON/OF
                         let cb = this.recuperarElemento("cb_" + item.id);
                         cb.addEventListener("click", this);
+                        // Botones para editar dispositivo
                         let btnEdit = this.recuperarElemento("edit_btn_" + item.id);
                         btnEdit.addEventListener('click', this);
+                        // Botones para eliminar dispositivo
                         let btnDelete = this.recuperarElemento("delete_btn_" + item.id);
                         btnDelete.addEventListener('click', this);
+                        // Botones para aceptar edición de dispositivo
                         let btnOk = this.recuperarElemento("ok_" + item.id);
                         btnOk.addEventListener('click', this);
+                        // Botones para cancelar edición de dispositivo
                         let btnCancel = this.recuperarElemento("cancel_" + item.id);
                         btnCancel.addEventListener('click', this);
+                        // Sliders de control de intensidad y temperatura
+                        if(item.type == 1 || item.type == 2){
+                            let btnSlider = this.recuperarElemento("slide_" + item.id);
+                            btnSlider.addEventListener('click', this);
+                        }
                     }
                     // Se agregan los listeners de formulario para agregar dispositivos
                     let btnAgregar = this.recuperarElemento("btn_agregar");
@@ -205,9 +247,9 @@ class Main implements EventListenerObject {
     }
 
     // Método para agregar un dispositivo
-    private newDevice(nombre:string, desc: string, tipo: number): void {
+    private newDevice(nombre:string, desc: string, tipo: number, ctrl:number): void {
         // Variable para armar el mensaje en formato JSON
-        let messageJSON = { name:nombre, description:desc, type:tipo, };
+        let messageJSON = { name:nombre, description:desc, type:tipo, control:ctrl };
         
         // Variable para realizar la petición
         let xmlHttpPost = new XMLHttpRequest();
@@ -250,10 +292,34 @@ class Main implements EventListenerObject {
         }
     }
 
-    // Método para actualizar nombre, descripción y/o tipo de dispositivo
-    private updateDeviceInfo(idDevice: number, name: string, description: string, tipo: number){
+    // Método para actualizar el estado de un dispositivo
+    private updateDeviceControl(idDevice: number, ctrl: number): void {
         // Variable para armar el mensaje en formato JSON
-        let messageJSON = { id: idDevice, name: name, description: description, type: tipo };
+        let messageJSON = { id: idDevice, control: ctrl };
+
+        // Variable para realizar la petición
+        let xmlHttpPut = new XMLHttpRequest();
+
+        // Variable para el texto de respuesta
+        let responseMetod = { html: 'Se ha actualizado el estado del dispositivo', classes: 'rounded waves-effect waves-light green' };
+        
+        // Se realiza la petición
+        xmlHttpPut.open("PUT", "http://localhost:8000/device/control/", true);
+        xmlHttpPut.setRequestHeader("Content-Type", "application/json");
+        xmlHttpPut.send(JSON.stringify(messageJSON));
+
+        // Se analiza el cambio de estado (Si tiene error se devuelve el mensaje de error)
+        xmlHttpPut.onreadystatechange = () => {
+            if (!(xmlHttpPut.status === 204)) {
+                responseMetod = { html: 'Error al intentar actualizar el estado del dispositivo', classes: 'rounded waves-effect waves-light red' };
+            }
+        }
+    }
+
+    // Método para actualizar nombre, descripción y/o tipo de dispositivo
+    private updateDeviceInfo(idDevice: number, name: string, description: string, tipo: number, ctrl: number){
+        // Variable para armar el mensaje en formato JSON
+        let messageJSON = { id: idDevice, name: name, description: description, type: tipo, control:ctrl };
 
         // Variable para realizar la petición
         let xmlHttpPut = new XMLHttpRequest();
@@ -334,6 +400,7 @@ class Main implements EventListenerObject {
     // Método para generar slider a los dispositivos regulables
     private generateSlider(item:any): string{
         let slidebar: string;
+        // Control de intensidad
         if(item.type == 1){
             slidebar = `
             <div class="slidecontainer">
@@ -342,9 +409,12 @@ class Main implements EventListenerObject {
                     <span><b>Intensidad</b></span>
                     <span>100%</span>
                 </label>
-                    <input type="range" id="myRange" min="10" max="100" value="60"/>
+                    <input type="range" min="10" max="100" value="${item.control}" id="slide_${item.id}" slide_id="${item.id}"/>
             </div>`
-        } else if(item.type == 2){
+        }
+
+        //Control de temperatura
+        else if(item.type == 2){
             slidebar = `
             <div class="slidecontainer">
                 <label for="myRange" style="font-size: 14px; display: flex; justify-content: space-between; width: 100%; color:darkblue">
@@ -352,7 +422,7 @@ class Main implements EventListenerObject {
                     <span><b>Temperatura</b></span>
                     <span>30°C</span>
                 </label>
-                    <input type="range" id="myRange" min="16" max="30" value="24"/>
+                    <input type="range" min="16" max="30" value="${item.control}" id="slide_${item.id}" slide_id="${item.id}"/>
             </div>`
         } else{
             slidebar = `<br><br>`;

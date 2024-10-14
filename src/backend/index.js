@@ -30,8 +30,8 @@ app.post('/device', function (req, res) {
     // Chequeo de parámetros para cargar un nuevo dispositivo
     if (req.body.name !== undefined && req.body.description !== undefined && req.body.type !== undefined) {
         // Si los parámetros están bien, se hace el insert
-        const query = "INSERT INTO Devices (name, description, state, type) VALUES (?, ?, ?, ?)";
-        const params = [req.body.name, req.body.description, req.body.state, req.body.type];
+        const query = "INSERT INTO Devices (name, description, state, type, control) VALUES (?, ?, ?, ?, ?)";
+        const params = [req.body.name, req.body.description, req.body.state, req.body.type, req.body.control];
 
         utils.query(query, params, (err, resp) => {
             if (err) {
@@ -51,8 +51,8 @@ app.post('/device', function (req, res) {
 app.put('/device/info/', function (req, res) {
 
     // Consulta preparada para evitar inyección SQL
-    const query = "UPDATE Devices SET name = ?, description = ?, type = ? WHERE id = ?";
-    const params = [req.body.name, req.body.description, req.body.type, req.body.id];
+    const query = "UPDATE Devices SET name = ?, description = ?, type = ?, control= ? WHERE id = ?";
+    const params = [req.body.name, req.body.description, req.body.type, req.body.control, req.body.id];
     
     utils.query(query, params, (err, resp) => {
         if (err) {
@@ -65,8 +65,24 @@ app.put('/device/info/', function (req, res) {
 
 // Actualizar el estado de un dispositivo
 app.put('/device/state/', function (req, res) {
-    utils.query("update Devices set state=" + req.body.state + " where id=" + req.body.id,
-        (err, resp) => {
+    const query = "update Devices set state= ? where id= ?"
+    const params = [req.body.state, req.body.id]
+
+    utils.query(query, params, (err, resp) => {
+            if (err) {
+                res.status(409).send(err.sqlMessage);
+            } else {
+                res.status(204).send(resp);
+            }
+        })
+})
+
+// Actualizar la intensidad o temperatura de un dispositivo
+app.put('/device/control/', function (req, res) {
+    const query = "update Devices set control= ? where id= ?"
+    const params = [req.body.control, req.body.id]
+    
+    utils.query(query, params, (err, resp) => {
             if (err) {
                 res.status(409).send(err.sqlMessage);
             } else {
@@ -77,7 +93,7 @@ app.put('/device/state/', function (req, res) {
 
 // Eliminar un dispositivo
 app.delete('/device/:id', function (req, res) {
-    const deviceId = req.params.id; // Obtener el ID del dispositivo de los parámetros de la URL
+    const deviceId = req.params.id;
 
     // Consulta para borrar el dispositivo
     const query = "DELETE FROM Devices WHERE id = ?";

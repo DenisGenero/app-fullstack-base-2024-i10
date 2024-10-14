@@ -2,20 +2,10 @@
     <img src="doc/gotoiot-logo.png" alt="logo" title="Goto IoT" align="right" width="60" height="60" />
 </a>
 
-Web App Full Stack Base
-=======================
+# Web App Full Stack Base 📡
 
-*Ayudaría mucho si apoyaras este proyecto con una ⭐ en Github!*
-
-Este proyecto es una aplicación web fullstack que se ejecuta sobre el ecosistema `Docker`. Está compuesta por un compilador de `TypeScript` que te permite utilizar este superset de JavaScript para poder programar un `cliente web`. También tiene un servicio en `NodeJS` que te permite ejecutar código en backend y al mismo tiempo disponibilizar el código del cliente web para interactar con el servicio. Además tiene una `base de datos` MySQL que puede interactuar con el backend para guardar y consultar datos, y de manera adicional trae un `administrador` de base de datos para poder administrar la base en caso que lo necesites.
-
-La aplicación IoT de base que viene con este proyecto se encarga de crear una tabla llamada `Devices` en la base de datos, y la idea es que vos puedas desarrollar el código de backend y frontend que te permita controlar desde el navegador el estado de los devices de un hogar inteligente - *como pueden ser luces, TVs, ventiladores, persianas, enchufes y otros* - y almacenar los estados de cada uno en la base de datos. 
-
-Realizando estas tareas vas a a tener una aplicación fullstack IoT del mundo real que utiliza tecnologías actuales en la que un backend es capaz de interactuar con una DB para cumplir con las peticiones de control que se le mandan desde el cliente web.
-
-En esta imagen podés ver una posible implementación del cliente web que controla los artefactos del hogar.
-
-![architecture](doc/webapp-example-1.png)
+## Introducción 🌐
+Este proyecto se desarrolló como trabajo final de la materia **Desarrollo de Aplicaciones Web**, parte del posgrado **Maestría en Internet de las Cosas** del **Laboratorio de Sistemas Embebidos** de la **Facultad de Ingeniería de la Universidad de Buenos Aires**.
 
 ## Comenzando 🚀
 
@@ -38,7 +28,7 @@ Continua con la descarga del código cuando tengas las dependencias instaladas y
 Para descargar el código, lo más conveniente es que realices un `fork` de este proyecto a tu cuenta personal haciendo click en [este link](https://github.com/gotoiot/app-fullstack-base/fork). Una vez que ya tengas el fork a tu cuenta, descargalo con este comando (acordate de poner tu usuario en el link):
 
 ```
-git clone https://github.com/USER/app-fullstack-base.git
+git clone https://github.com/DenisGenero/app-fullstack-base.git
 ```
 
 > En caso que no tengas una cuenta en Github podes clonar directamente este repo.
@@ -80,7 +70,6 @@ En ese archivo está la configuración de la tabla `Devices` y otras configuraci
 Tené en cuenta que la base de datos se crea con permisos de superusuario por lo que no podrías borrar el directorio con tu usuario de sistema, para eso debés hacerlo con permisos de administrador. En ese caso podés ejecutar el comando `sudo rm -r db/data` para borrar el directorio completo.
 
 </details>
-
 
 ## Detalles principales 🔍
 
@@ -156,46 +145,41 @@ En esta sección podés ver los detalles específicos de funcionamiento del cód
 
 <details><summary><b>Mira los detalles de implementación</b></summary><br>
 
-### Agregar un dispositivo
+### Descripción del Proyecto 📋
+El sistema web es una aplicación de página simple (SPA, *Single Page Application*). Al iniciarse, realiza una consulta a la base de datos para mostrar los dispositivos almacenados junto con su estado actual (ver Figura 1). Estos dispositivos se presentan en tarjetas, donde se muestran las características principales de cada uno. Dependiendo del tipo de dispositivo, la interfaz permite realizar diferentes acciones, y además, muestra una imagen que dependerá del nombre del dispositivo.  
 
-Completá los pasos para agregar un dispositivo desde el cliente web.
+![Figura 1](images/Figura1.png)
 
-### Frontend
+### Interacciones entre Frontend y Backend 🔄  
 
-Completá todos los detalles sobre cómo armaste el frontend, sus interacciones, etc.
+#### Agregar un Dispositivo ➕
+Al presionar el botón "Agregar dispositivo", se despliega un formulario que permite ingresar la información necesaria: nombre, descripción (ubicación en la casa), tipo de dispositivo (ON/OFF, dimmerizable o con regulación de temperatura), como se puede ver en la Figura 2. Al aceptar, si todos los campos están completos, el dispositivo se añadirá a la base de datos y aparecerá en la interfaz. Si algún campo está incompleto, se mostrará una alerta, solicitando al usuario completar la información faltante. Además, la operación puede cancelarse en cualquier momento presionando el botón "Cancelar".  
 
-### Backend
+![Figura 2](images/Figura2.png)
 
-Completá todos los detalles de funcionamiento sobre el backend, sus interacciones con el cliente web, la base de datos, etc.
+#### Editar un Dispositivo ✏️
+Para editar un dispositivo, se debe hacer clic en el botón azul correspondiente. Al hacerlo, se desplegará un formulario con los campos editables ya cargados con la información del dispositivo (ver Figura 3). Hay dos botones disponibles: uno para aceptar los cambios, que actualizará tanto la base de datos como la interfaz, y otro para cancelar la edición, ocultando el formulario.
 
-<details><summary><b>Ver los endpoints disponibles</b></summary><br>
+![Figura 3](images/Figura3.png)
 
-Completá todos los endpoints del backend con los metodos disponibles, los headers y body que recibe, lo que devuelve, ejemplos, etc.
+#### Eliminar un Dispositivo 🗑️
+Para eliminar un dispositivo, se debe hacer clic en el botón rojo de la tarjeta correspondiente. Aparecerá una ventana emergente pidiendo confirmación de la acción (ver Figura 4). Si se confirma, el dispositivo se eliminará de la base de datos y de la interfaz.
 
-1) Devolver el estado de los dispositivos.
+![Figura 4](images/Figura4.png)
 
-```json
-{
-    "method": "get",
-    "request_headers": "application/json",
-    "request_body": "",
-    "response_code": 200,
-    "request_body": {
-        "devices": [
-            {
-                "id": 1,
-                "status": true,
-                "description": "Kitchen light"
-            }
-        ]
-    },
-}
-``` 
+#### Regulación de intensidad 🔆 o temperatura 🌡️
+Si un dispositivo es regulable aparecerá una barra deslizable en la parte inferior de su respectiva tarjeta. Dependiendo del tipo de dispositivo dicha barra permitirá regular su intencidad desde el 10 al 10% o su temperatura de 16 a 30°C. Esta información se actualizará en la base de datos
 
-</details>
+### Endpoints del Backend ⚙️
 
-</details>
-
+| Método | Endpoint            | Descripción                                                                                      | Respuesta exitosa | Respuesta en error |
+|--------|---------------------|--------------------------------------------------------------------------------------------------|------------------|-------------------|
+| GET    | `/devices/`          | Recupera todos los dispositivos de la base de datos.                                             | 200 (lista de dispositivos) | 409 (mensaje de error) |
+| POST   | `/device`            | Inserta un nuevo dispositivo. Los campos requeridos son `name`, `description` y `type`. El estado se inicializa en `false`. | 200 (respuesta de la base de datos) | 400 (error en los datos), 409 (mensaje de error) |
+| PUT    | `/device/info/`      | Actualiza los campos `name`, `description` y `type` de un dispositivo existente mediante su `id`. | 204 (sin contenido) | 409 (mensaje de error) |
+| PUT    | `/device/state/`     | Actualiza el campo `state` (estado ON/OFF) de un dispositivo mediante su `id`.                                | 204 (sin contenido) | 409 (mensaje de error) |
+| PUT    | `/device/control/`   | Actualiza el campo `control` (intensidad o temperatura) de un dispositivo mediante su `id`.                                | 204 (sin contenido) | 409 (mensaje de error) |
+| DELETE | `/device/:id`        | Elimina un dispositivo según su `id`. 
 
 ## Tecnologías utilizadas 🛠️
 
@@ -213,43 +197,6 @@ En esta sección podés ver las tecnologías más importantes utilizadas.
 
 </details>
 
-## Contribuir 🖇️
+## Autor 👥
 
-Si estás interesado en el proyecto y te gustaría sumar fuerzas para que siga creciendo y mejorando, podés abrir un hilo de discusión para charlar tus propuestas en [este link](https://github.com/gotoiot/app-fullstack-base/issues/new). Así mismo podés leer el archivo [Contribuir.md](https://github.com/gotoiot/gotoiot-doc/wiki/Contribuir) de nuestra Wiki donde están bien explicados los pasos para que puedas enviarnos pull requests.
-
-## Sobre Goto IoT 📖
-
-Goto IoT es una plataforma que publica material y proyectos de código abierto bien documentados junto a una comunidad libre que colabora y promueve el conocimiento sobre IoT entre sus miembros. Acá podés ver los links más importantes:
-
-* **[Sitio web](https://www.gotoiot.com/):** Donde se publican los artículos y proyectos sobre IoT. 
-* **[Github de Goto IoT:](https://github.com/gotoiot)** Donde están alojados los proyectos para descargar y utilizar. 
-* **[Comunidad de Goto IoT:](https://groups.google.com/g/gotoiot)** Donde los miembros de la comunidad intercambian información e ideas, realizan consultas, solucionan problemas y comparten novedades.
-* **[Twitter de Goto IoT:](https://twitter.com/gotoiot)** Donde se publican las novedades del sitio y temas relacionados con IoT.
-* **[Wiki de Goto IoT:](https://github.com/gotoiot/doc/wiki)** Donde hay información de desarrollo complementaria para ampliar el contexto.
-
-## Muestas de agradecimiento 🎁
-
-Si te gustó este proyecto y quisieras apoyarlo, cualquiera de estas acciones estaría más que bien para nosotros:
-
-* Apoyar este proyecto con una ⭐ en Github para llegar a más personas.
-* Sumarte a [nuestra comunidad](https://groups.google.com/g/gotoiot) abierta y dejar un feedback sobre qué te pareció el proyecto.
-* [Seguirnos en twitter](https://github.com/gotoiot/doc/wiki) y dejar algún comentario o like.
-* Compartir este proyecto con otras personas.
-
-## Autores 👥
-
-Las colaboraciones principales fueron realizadas por:
-
-* **[Agustin Bassi](https://github.com/agustinBassi)**: Ideación, puesta en marcha y mantenimiento del proyecto.
-* **[Ernesto Giggliotti](https://github.com/ernesto-g)**: Creación inicial del frontend, elección de Material Design.
-* **[Brian Ducca](https://github.com/brianducca)**: Ayuda para conectar el backend a la base de datos, puesta a punto de imagen de Docker.
-
-También podés mirar todas las personas que han participado en la [lista completa de contribuyentes](https://github.com/###/contributors).
-
-## Licencia 📄
-
-Este proyecto está bajo Licencia ([MIT](https://choosealicense.com/licenses/mit/)). Podés ver el archivo [LICENSE.md](LICENSE.md) para más detalles sobre el uso de este material.
-
----
-
-**Copyright © Goto IoT 2021** ⌨️ [**Website**](https://www.gotoiot.com) ⌨️ [**Group**](https://groups.google.com/g/gotoiot) ⌨️ [**Github**](https://www.github.com/gotoiot) ⌨️ [**Twitter**](https://www.twitter.com/gotoiot) ⌨️ [**Wiki**](https://github.com/gotoiot/doc/wiki)
+* **[Denis Genero](https://github.com/DenisGenero)**

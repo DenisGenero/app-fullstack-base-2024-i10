@@ -4,4 +4,5 @@ class Device{
   public description: string;
   public state: boolean;
   public type: number;
+  public control: number;
 }

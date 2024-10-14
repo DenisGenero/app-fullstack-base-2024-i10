@@ -168,7 +168,7 @@ Para eliminar un dispositivo, se debe hacer clic en el botón rojo de la tarjeta
 ![Figura 4](images/Figura4.png)
 
 #### Regulación de intensidad 🔆 o temperatura 🌡️
-Si un dispositivo es regulable aparecerá una barra deslizable en la parte inferior de su respectiva tarjeta. Dependiendo del tipo de dispositivo dicha barra permitirá regular su intencidad desde el 10 al 10% o su temperatura de 16 a 30°C. Esta información se actualizará en la base de datos
+Si un dispositivo es regulable aparecerá una barra deslizable en la parte inferior de su respectiva tarjeta. Dependiendo del tipo de dispositivo dicha barra permitirá regular su intencidad desde el 10 al 100% o su temperatura de 16 a 30°C. Esta información se actualizará en la base de datos
 
 ### Endpoints del Backend ⚙️
 
